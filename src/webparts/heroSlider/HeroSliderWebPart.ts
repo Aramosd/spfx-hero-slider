@@ -12,6 +12,9 @@ import {
 import {
   IPropertyPaneConfiguration,
   PropertyPaneCheckbox,
+  PropertyPaneSlider,
+  PropertyPaneTextField,
+  PropertyPaneToggle,
 } from '@microsoft/sp-property-pane';
 
 import * as strings from 'HeroSliderWebPartStrings';
@@ -19,6 +22,7 @@ import { HeroSlider } from './components';
 import { HeroSliderProps } from './components/HeroSlider/HeroSliderProps';
 import { DataProvider } from './models/DataProvider';
 import { MockDataProvider } from './data/index';
+import { RestDataProvider } from './data/index';
 
 export default class HeroSliderWebPart extends BaseClientSideWebPart<
   HeroSliderProps
@@ -28,7 +32,7 @@ export default class HeroSliderWebPart extends BaseClientSideWebPart<
       return new MockDataProvider();
     }
 
-    // return new RestDataProvider(this.context);
+    return new RestDataProvider(this.context);
   }
 
   public render(): void {
@@ -54,6 +58,14 @@ export default class HeroSliderWebPart extends BaseClientSideWebPart<
     ReactDom.render(element, this.domElement);
   }
 
+  protected get disableReactivePropertyChanges(): boolean {
+    return true;
+  }
+
+  protected onAfterPropertyPaneChangesApplied(): void {
+    ReactDom.unmountComponentAtNode(this.domElement);
+  }
+
   protected onDispose(): void {
     ReactDom.unmountComponentAtNode(this.domElement);
   }
@@ -77,6 +89,33 @@ export default class HeroSliderWebPart extends BaseClientSideWebPart<
                 PropertyPaneCheckbox('hideControls', {
                   text: strings.HideControlsFieldLabel,
                   checked: false,
+                }),
+                PropertyPaneToggle('hideNavigation', {
+                  label: strings.HideNavigationFieldLabel,
+                  checked: false,
+                  onText: 'hidden',
+                  offText: 'shown',
+                }),
+              ],
+            },
+            {
+              groupName: strings.LimitsGroupName,
+              groupFields: [
+                PropertyPaneHorizontalRule(),
+                PropertyPaneSlider('slidesLimit', {
+                  label: strings.SlidesLimitFieldLabel,
+                  min: 2,
+                  max: 6,
+                  showValue: true,
+                }),
+              ],
+            },
+            {
+              groupName: strings.ContentTypeGroupName,
+              groupFields: [
+                PropertyPaneHorizontalRule(),
+                PropertyPaneTextField('contentTypeName', {
+                  label: strings.ContentTypeNameFieldLabel,
                 }),
               ],
             },
